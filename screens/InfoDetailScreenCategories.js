@@ -15,24 +15,26 @@ function InfoDetailScreenCategories({ route, navigation }) {
     // }, [catId, navigation]
     //   );
   
+      // Category Id passed from my CategoriesScreen. The const now names it catId.
+      // to get the items on details screen you can use route.params with prop name 
+      const catId = route.params.categoryId;
+      const infoTitle = route.params.infoTitle;
+      const infoTitle2 = route.params.infoTitle2;
+      const imageUrl = route.params.imageUrl;
+      const description = route.params.description;
+      const infoImageUrl = route.params.infoImageUrl;
+
+
       useLayoutEffect(() => {
+      // in order to set custom title for any specific screen you can use navigation.setOptions method which was already there
+      // but issue was with value you were assigning to the title.. 
+      //  you have to assign the value you received as props from previous screen navigation
       const categoryTitle = CATEGORIESDATA.find((category) => category.id === catId).categoryTitle;
       navigation.setOptions({
-        title: categoryTitle
+        title: infoTitle2
       });
     }, [catId, navigation]
     );
-
-
-  // Category Id passed from my CategoriesScreen. The const now names it catId.
-  // to get the items on details screen you can use route.params with prop name 
-  const catId = route.params.categoryId;
-  const infoTitle = route.params.infoTitle;
-  const infoTitle2 = route.params.infoTitle2;
-  const imageUrl = route.params.imageUrl;
-  const description = route.params.description;
-  const infoImageUrl = route.params.infoImageUrl;
-
 
   // I am able to pass the catId, but I cannot figure out how to pass the
   // title and imageUrl const now names it catId.

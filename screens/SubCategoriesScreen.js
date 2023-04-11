@@ -46,6 +46,7 @@ function SubCategoriesScreen({ navigation, route }) {
   
     function renderCategoryInfoItem(itemData) {
     function pressHandler() {
+      console.log('itemdata', itemData);
       navigation.navigate('InfoDetailScreenCategories', {
         categoryId: itemData.item.id,
         infoTitle: itemData.item.infoTitle,
