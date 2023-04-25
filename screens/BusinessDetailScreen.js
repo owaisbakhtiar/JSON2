@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, Text, View, Image, Linking, TouchableOpacity } from 'react-native'
-import React, { useLayoutEffect, useContext } from 'react'
+import { ScrollView, FlatList, StyleSheet, Text, View, Image, Linking, TouchableOpacity } from 'react-native'
+import React, { useLayoutEffect, useContext, useState, useEffect } from 'react'
 import MapChickBanner from '../components/MapChickBanner';
 import { BUSINESS, CATEGORIES, SUBCATEGORIES } from '../data/business-data';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,24 +9,54 @@ import ReadMore from 'react-native-read-more-text';
 import { Fontisto } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { FavoritesContext } from '../store/context/favorites-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BusinessDetailScreen = ({ route, navigation, id }) => {
 	  const favoriteBusinessCtx = useContext(FavoritesContext);
-
     const businessId = route.params.businessId;
-  
+    const businessIndex = route.params.businessIndex;  
     const selectedBusiness = BUSINESS.find((business) => business.id === businessId);
-
     const businessIsFavorite = favoriteBusinessCtx.ids.includes(businessId);
 
-        useLayoutEffect(() => {
-          const selectedBusiness = BUSINESS.find (
-            (business) => business.id === businessId
-            ).title;
-            navigation.setOptions({
-              title: selectedBusiness
-            });
-        }, [businessId, navigation]);
+    const [comments, setComments] = useState([]);
+
+    useEffect(() => {
+      navigation.addListener('focus', () => {
+        setCommentsListOnPage();
+        // console.log('test');
+      });
+    });
+    useEffect(() => {
+      console.log('test fav business', favoriteBusinessCtx);
+      setFavStorage();
+    }, [favoriteBusinessCtx]);
+    useLayoutEffect(() => {
+      console.log('business index ', businessIndex);
+      const selectedBusiness = BUSINESS.find (
+        (business) => business.id === businessId
+        ).title;
+        navigation.setOptions({
+          title: selectedBusiness
+        });
+    }, [businessId, navigation]);
+    
+    const setFavStorage = async() => {
+      await AsyncStorage.setItem("favoriteBusiness", JSON.stringify(favoriteBusinessCtx));
+    }
+    const setCommentsListOnPage = async() => {
+      console.log('favoriteBusinessCtx', favoriteBusinessCtx);
+      const commentsData = await AsyncStorage.getItem('comments');
+      const commentDataParse = JSON.parse(commentsData);
+      let found = -1;
+      // console.log('commentDataParse', commentDataParse);
+      if (commentDataParse) {
+        found = commentDataParse.findIndex(element => element.businessIndex == businessIndex);
+        // console.log('comment parse data', commentDataParse);
+        // console.log('bus index', businessIndex);
+        // console.log('found', found);
+        setComments(commentDataParse[found].commentArray);
+      }
+    }
   
     function favoritesToggleOnOffHandler() {
         if (businessIsFavorite) {
@@ -37,21 +67,26 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
     }
 
     function favoritesNavigationHandler() {
-        if (businessIsFavorite) {
-            ''
-        } else {
-            navigation.navigate('FavoritesEditScreen', {
-                businessId: id,
-            });
-        }
+      // console.log('test');
+      // return
+      if (businessIsFavorite) {
+          ''
+      } else {
+        navigation.navigate('FavoritesEditScreen', {
+          businessId: id,
+          businessIndex: businessIndex,
+          selectedBusiness: selectedBusiness
+        });
+          // navigation.navigate('FavoritesEditScreen', {
+          //     businessId: id,
+          // });
+      }
     }
-
 
     function navigationAndToggleCombined() {
         favoritesToggleOnOffHandler();
         favoritesNavigationHandler();
     }  
-
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -70,7 +105,6 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
             }
         });
     }, [navigation, navigationAndToggleCombined]);
-  
 
     _renderTruncatedFooter = (handlePress) => {
         return (
@@ -91,7 +125,24 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
     _handleTextReady = () => {
         // ...
     }
-  
+    function addComment() {
+        navigation.navigate('FavoritesEditScreen', {
+          businessId: id,
+          businessIndex: businessIndex,
+          selectedBusiness: selectedBusiness
+        });
+    }
+    function editComment(item, index) {
+      console.log('item', item, index)
+      navigation.navigate('FavoritesEditScreen', {
+        businessId: id,
+        businessIndex: businessIndex,
+        msg: item,
+        msgIndex: index,
+        selectedBusiness: selectedBusiness
+      });
+    }
+
     return (
       <>
       <MapChickBanner />
@@ -142,9 +193,24 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
             </ReadMore>
             </View>
           <View style={{ marginVertical: 15, backgroundColor: '#ddd', padding: 15, borderRadius: 15 }}>
-            <Text style={{fontSize: 18, fontWeight: 'bold'}}>User comments</Text>
-
-          <Text style={{fontSize: 16}}>{selectedBusiness.userComments}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={{fontSize: 18, fontWeight: 'bold'}}>User comments</Text>
+              <Text style={{fontSize: 18, fontWeight: 'bold'}} onPress={addComment}>Add New</Text> 
+            </View>
+          {comments.map((item, index) => {
+            console.log('comment item', item);
+            return (
+              <TouchableOpacity key={index} style={{ paddingVertical: 10, flexDirection: 'row' }} onPress={() => {editComment(item, index)}}>
+                <Text style={{fontSize: 16, flex: 1}}>{item}</Text>
+                <FontAwesome
+                  name="edit"
+                  size={22}
+                  color='black'
+                />
+              </TouchableOpacity>
+            );
+          })}
+         
       
           </View>
 

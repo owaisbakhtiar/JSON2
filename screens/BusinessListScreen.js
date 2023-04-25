@@ -8,12 +8,14 @@ import Colors from '../constants/Colors';
 function BusinessListScreen({ route, navigation, }) {
 
   const catId = route.params.categoryId;
+  const subCategoryData = route.params.subCategoryData;
 
   const displayBusiness = BUSINESS.filter((catItem) => {
     return catItem.subCategoryIds.indexOf(catId) >= 0;
   });
 
     useLayoutEffect(() => {
+      console.log('sub category datasss', subCategoryData);
       const categoryTitle = SUBCATEGORIES.find(
         (category) => category.id === catId
         ).subCategoryTitle;
@@ -25,8 +27,9 @@ function BusinessListScreen({ route, navigation, }) {
   
   function renderBusinessList(itemData) {
     const item = itemData.item
-        
+    console.log('itemData.index', itemData.index);    
     return <BusinessListCard
+      index={itemData.index}
       id={itemData.item.id}
       businessTitle={itemData.item.businessTitle}
       imageUrl={itemData.item.imageUrl}
