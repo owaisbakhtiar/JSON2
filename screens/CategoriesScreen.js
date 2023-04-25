@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { FlatList, Text, View, TouchableOpacity, StyleSheet } from 'react-native'
 import CategoriesCard from '../components/CategoriesCard'
 import InfoCardHome from '../components/InfoCardHome';
@@ -7,10 +7,30 @@ import { CATEGORIES, CATEGORIESDATA } from '../data/business-data'
 import { HOMEINFOBUBBLES } from '../data/business-data';
 import Colors from '../constants/Colors'
 import {DrawerActions} from "@react-navigation/routers";
+import { FavoritesContext } from '../store/context/favorites-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function CategoriesScreen({ navigation }) {
-  
-  
+  const favoriteBusinessCtx = useContext(FavoritesContext);
+
+  useEffect(() => {
+    // console.log('test fav business', favoriteBusinessCtx);
+    setFavStorage();
+  }, []);
+
+  const setFavStorage = async() => {
+    const favBusiness = await AsyncStorage.getItem("favoriteBusiness");
+    console.log('favBusiness', favBusiness);
+    let getFavStorageData = JSON.parse(favBusiness);
+    console.log('favBusiness', favBusiness);
+    console.log('getFavStorageData', getFavStorageData);
+    if (getFavStorageData) {
+      getFavStorageData.ids.forEach((item) => {
+        console.log('item', item);
+        favoriteBusinessCtx.addFavorite(item);
+      });
+    }
+  }
   function renderCategoriesCard(itemData) {
     function pressHandler() {
       console.log(itemData);

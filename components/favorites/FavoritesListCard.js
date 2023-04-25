@@ -6,6 +6,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import FavoritesButton from './FavoritesButton';
 import MainButton from '../MainButton';
+import { BUSINESS } from '../../data/business-data';
+
 
 function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle, userComments, location, hours1, hours2, onPress, imageUrl }){
   const navigation = useNavigation();
@@ -15,10 +17,23 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
      businessId: id,
    });
   }
+
+  function selectBusinessHandler() {
+    console.log('business id ', id);
+    console.log('BUSINESS', BUSINESS[2]);
+    const index = BUSINESS.findIndex(element => element.id == id);
+    console.log('found', index);
+    // console.log('index is ', index);
+    //return;
+    navigation.navigate('BusinessDetailScreen', {
+      businessId: id,
+      businessIndex: index
+    });
+  }
   
   return (
       
-      <View style={{
+      <TouchableOpacity onPress={selectBusinessHandler} style={{
       justifyContent: 'center', alignItems: 'center', marginLeft: 20,
       width: 300, backgroundColor: 'white', borderRadius: 20,
       borderColor: Colors.primaryColor, borderWidth: 1, padding: 10
@@ -67,7 +82,7 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
         <Text style={styles.bottomRowText}>{userComments}</Text>
 </View> */}
       
-    </View>
+    </TouchableOpacity>
 
 
   );
