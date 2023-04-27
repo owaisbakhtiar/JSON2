@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import React, { useContext, useEffect } from 'react'
 import Colors from '../../constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 import { AntDesign } from '@expo/vector-icons';
@@ -7,10 +7,17 @@ import { Ionicons } from '@expo/vector-icons';
 import FavoritesButton from './FavoritesButton';
 import MainButton from '../MainButton';
 import { BUSINESS } from '../../data/business-data';
-
+import { FavoritesContext } from '../../store/context/favorites-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle, userComments, location, hours1, hours2, onPress, imageUrl }){
   const navigation = useNavigation();
+  const favoriteBusinessCtx = useContext(FavoritesContext);
+
+  useEffect(() => {
+    // console.log('test fav business', favoriteBusinessCtx);
+    setFavStorage();
+  }, [favoriteBusinessCtx]);
 
   function favoritesEditHandler() {
     navigation.navigate('FavoritesEditScreen', {
@@ -30,18 +37,23 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
       businessIndex: index
     });
   }
+
+  const removeFromFav = () => {
+    favoriteBusinessCtx.removeFavorite(id);
+  }
   
+  const setFavStorage = async() => {
+    console.log('fav context', favoriteBusinessCtx);
+    await AsyncStorage.setItem("favoriteBusiness", JSON.stringify(favoriteBusinessCtx));
+  }
+
   return (
       
-      <TouchableOpacity onPress={selectBusinessHandler} style={{
-      justifyContent: 'center', alignItems: 'center', marginLeft: 20,
-      width: 300, backgroundColor: 'white', borderRadius: 20,
-      borderColor: Colors.primaryColor, borderWidth: 1, padding: 10
-    }}>
-    
-      
-        
-        
+      <View style={{
+        justifyContent: 'center', alignItems: 'center', marginLeft: 20,
+        width: 300, backgroundColor: 'white', borderRadius: 20,
+        borderColor: Colors.primaryColor, borderWidth: 1, padding: 10
+      }}>
           <Text style={styles.title}>{businessTitle} </Text>
           <Text style={styles.text}>{location}</Text>
           <Text style={styles.text}>{hours1}</Text>
@@ -50,11 +62,12 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
 
 
         <View style={{width: '100%', marginTop: 5}}>
-          <Image
-            style={{width: '100%', height: 120, borderRadius: 15}}
-            source={{ uri: imageUrl }}
-        />
-
+          <TouchableOpacity onPress={selectBusinessHandler}>
+            <Image
+              style={{width: '100%', height: 120, borderRadius: 15}}
+              source={{ uri: imageUrl }}
+            />
+          </TouchableOpacity>
           <View style={{ width: '100%',alignItems: 'center', marginTop: 15 }}>
                 <MainButton
                   onPress={() => navigation.goBack()}>
@@ -64,15 +77,18 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
 
           <View style={{flexDirection: 'row', width: '100%', justifyContent: 'space-around', alignItems: 'center', marginTop: 5}}>
                 <MainButton
-                  onPress={() => navigation.goBack()}>
+                  onPress={selectBusinessHandler}
+                  // onPress={() => navigation.goBack()}
+                >
                   View{'\n'}business
               </MainButton>
                 <MainButton
-                  onPress={() => navigation.goBack()}>
+                  onPress={removeFromFav}
+                  // onPress={() => navigation.goBack()}
+                >
                   Remove from {'\n'}favorites
               </MainButton>
-            
-</View>
+          </View>
 
         </View>
         </View>
@@ -82,7 +98,7 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
         <Text style={styles.bottomRowText}>{userComments}</Text>
 </View> */}
       
-    </TouchableOpacity>
+    </View>
 
 
   );

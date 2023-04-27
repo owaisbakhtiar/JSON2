@@ -30,7 +30,7 @@ function SubCategoriesScreen({ navigation, route }) {
       function pressHandler() {
         navigation.navigate('BusinessListScreen', {
           categoryId: itemData.item.id,
-          subCategoryData: itemData
+          // subCategoryData: itemData
         });
       }
 

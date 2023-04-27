@@ -53,8 +53,10 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
         found = commentDataParse.findIndex(element => element.businessIndex == businessIndex);
         // console.log('comment parse data', commentDataParse);
         // console.log('bus index', businessIndex);
-        // console.log('found', found);
-        setComments(commentDataParse[found].commentArray);
+        console.log('found', found);
+        if (commentDataParse[found] && commentDataParse[found].commentArray) {
+          setComments(commentDataParse[found].commentArray);
+        }
       }
     }
   
@@ -85,7 +87,7 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
 
     function navigationAndToggleCombined() {
         favoritesToggleOnOffHandler();
-        favoritesNavigationHandler();
+        // favoritesNavigationHandler();
     }  
 
     useLayoutEffect(() => {
@@ -134,6 +136,7 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
     }
     function editComment(item, index) {
       console.log('item', item, index)
+      // return;
       navigation.navigate('FavoritesEditScreen', {
         businessId: id,
         businessIndex: businessIndex,
@@ -142,7 +145,31 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
         selectedBusiness: selectedBusiness
       });
     }
-
+    
+    const deleteComment = async(item, index) => {
+      const commentsData = await AsyncStorage.getItem('comments');
+      const commentDataParse = JSON.parse(commentsData);
+      let found = -1;
+      // console.log('commentDataParse', commentDataParse);
+      if (commentDataParse) {
+        found = commentDataParse.findIndex(element => element.businessIndex == businessIndex);
+        let myComments = comments;
+        let updatedCommentState = myComments.splice(index, 1);
+        // console.log('updatedCommentState', updatedCommentState);
+        // console.log('myComments', myComments);
+        setComments([...myComments]);
+        commentDataParse[found].commentArray = myComments;
+        console.log('commentDataParse', commentDataParse);
+        await AsyncStorage.setItem("comments", JSON.stringify(commentDataParse));
+      }
+    }
+    const navigateToDetails = () => {
+      navigation.navigate('FavoritesEditScreen', {
+          businessId: id,
+          businessIndex: businessIndex,
+          selectedBusiness: selectedBusiness
+        });
+    }
     return (
       <>
       <MapChickBanner />
@@ -179,6 +206,9 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
                 
             </View>
           </View>
+          <TouchableOpacity onPress={navigateToDetails} style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{fontSize: 24, fontWeight: 'bold', color: Colors.primaryDark}} onPress={addComment}>View Details</Text> 
+          </TouchableOpacity>
           <View>
             <Text style={{fontSize: 18, fontWeight: 'bold'}}>About {selectedBusiness.businessTitle}</Text>
 
@@ -200,14 +230,23 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
           {comments.map((item, index) => {
             console.log('comment item', item);
             return (
-              <TouchableOpacity key={index} style={{ paddingVertical: 10, flexDirection: 'row' }} onPress={() => {editComment(item, index)}}>
+              <View key={index} style={{ paddingVertical: 10, flexDirection: 'row' }}>
                 <Text style={{fontSize: 16, flex: 1}}>{item}</Text>
-                <FontAwesome
-                  name="edit"
-                  size={22}
-                  color='black'
-                />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => {editComment(item, index)}} style={{ padding: 5 }}>
+                  <FontAwesome
+                    name="edit"
+                    size={22}
+                    color={Colors.primaryDark}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {deleteComment(item, index)}} style={{ padding: 5 }}>
+                  <FontAwesome
+                    name="trash"
+                    size={22}
+                    color={Colors.primaryDark}
+                  />
+                </TouchableOpacity>
+              </View>
             );
           })}
          
