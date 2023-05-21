@@ -14,37 +14,74 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BusinessDetailScreen = ({ route, navigation, id }) => {
 	  const favoriteBusinessCtx = useContext(FavoritesContext);
     const businessId = route.params.businessId;
-    const businessIndex = route.params.businessIndex;  
+    const businessIndex = route.params.businessIndex;
     const selectedBusiness = BUSINESS.find((business) => business.id === businessId);
-    const businessIsFavorite = favoriteBusinessCtx.ids.includes(businessId);
-
+    // const businessIsFavorite = favoriteBusinessCtx.ids.includes(businessId);
+    const categoryId = route.params.categoryId;
+    
     const [comments, setComments] = useState([]);
+    const [businessIsFavorite, setBusinessIsFavorite] = useState(false);
 
     useEffect(() => {
       navigation.addListener('focus', () => {
         setCommentsListOnPage();
-        // console.log('test');
+        setFavFlag();
+        console.log('category ID on business detail', categoryId);
       });
     });
     useEffect(() => {
-      console.log('test fav business', favoriteBusinessCtx);
+      // console.log('test fav business', favoriteBusinessCtx);
       setFavStorage();
     }, [favoriteBusinessCtx]);
     useLayoutEffect(() => {
-      console.log('business index ', businessIndex);
-      const selectedBusiness = BUSINESS.find (
-        (business) => business.id === businessId
-        ).title;
+      // console.log('business index ', businessIndex);
+      // const selectedBusiness = BUSINESS.find (
+      //   (business) => business.id === businessId
+      //   ).title;
+        console.log('selectedBusiness', selectedBusiness);
         navigation.setOptions({
-          title: selectedBusiness
+          title: selectedBusiness.businessTitle // selectedBusiness
         });
     }, [businessId, navigation]);
     
+    const setFavFlag = async() => {
+      const flag_return = await check_fav_exist();
+      console.log('flag return from check fav ', flag_return);
+      setBusinessIsFavorite(flag_return);
+    }
+
+    const check_fav_exist = async() => {
+      const fav_items_parsed = favoriteBusinessCtx.ids;
+      let is_fav_exist = false;  
+      if (fav_items_parsed) {
+        const category_found = fav_items_parsed.findIndex(element => element.categoryId == categoryId);
+        if (category_found >= 0) {
+          const business_ids = fav_items_parsed[category_found].ids; 
+          console.log('category_found in fav item storage', fav_items_parsed[category_found]);
+          // check if business id exist in this category
+          let id_found = -1;
+          for (let i = 0; i < business_ids.length; i++) {
+            if (business_ids[i].id == businessId) {
+              id_found = i;
+              break;
+            }
+          }
+          if (id_found >= 0) {
+            is_fav_exist = true;
+            console.log('category matched and business id is matched');
+          } else {
+            console.log('category matched and business id not matched');
+          }
+        }
+      }
+      return is_fav_exist;
+    }
+
     const setFavStorage = async() => {
       await AsyncStorage.setItem("favoriteBusiness", JSON.stringify(favoriteBusinessCtx));
     }
     const setCommentsListOnPage = async() => {
-      console.log('favoriteBusinessCtx', favoriteBusinessCtx);
+      // console.log('favoriteBusinessCtx', favoriteBusinessCtx);
       const commentsData = await AsyncStorage.getItem('comments');
       const commentDataParse = JSON.parse(commentsData);
       let found = -1;
@@ -59,13 +96,85 @@ const BusinessDetailScreen = ({ route, navigation, id }) => {
         }
       }
     }
-  
-    function favoritesToggleOnOffHandler() {
-        if (businessIsFavorite) {
-            favoriteBusinessCtx.removeFavorite(businessId);
+    const favoritesToggleOnOffHandler = async() => {
+      const fav_items_parsed = favoriteBusinessCtx.ids;
+      console.log('fav item parsed', fav_items_parsed);
+      setBusinessIsFavorite(!businessIsFavorite);
+      // check category if exist in storage
+      if (fav_items_parsed && fav_items_parsed.length > 0) {
+        const category_found = fav_items_parsed.findIndex(element => element.categoryId == categoryId);
+        if (category_found >= 0) {
+          const business_ids = fav_items_parsed[category_found].ids;
+          console.log('category_found in fav item storage', fav_items_parsed[category_found]);
+          // check if business id exist in this category
+          let id_found = -1;
+          for (let i = 0; i < business_ids.length; i++) {
+            console.log('business id at index', i, ' is ', business_ids[i]);
+            if (business_ids[i].id == businessId) {
+              id_found = i;
+            }
+          }
+          console.log('business_found in fav item storage', id_found);
+          if (id_found >= 0) {
+            // fav_items_parsed[category_found].ids.push(businessId);
+            business_ids.splice(id_found, 1);
+            fav_items_parsed[category_found].ids = business_ids;
+            if (business_ids.length == 0) {
+              console.log('business length is 0 after id removed so remove category as well');
+              fav_items_parsed.splice(category_found, 1);
+            }
+            console.log('category matched and business id is matched', business_ids);
+            console.log(fav_items_parsed);
+          } else {
+            fav_items_parsed[category_found].ids.push({ id: businessId });
+            console.log(fav_items_parsed);
+            console.log('category matched and business id not matched');
+          }
         } else {
-            favoriteBusinessCtx.addFavorite(businessId);
+          console.log('category not found so we push it directly');
+          const selected_data = {
+            categoryId: categoryId,
+            ids: [{ id: businessId }]
+          }
+          fav_items_parsed.push(selected_data);
+          console.log(fav_items_parsed);
         }
+        favoriteBusinessCtx.addFavorite(fav_items_parsed);
+        await AsyncStorage.setItem("fav_item", JSON.stringify(fav_items_parsed));
+      } else {
+        console.log('fav is empty so add directly');
+        const fav_item = [];
+        const selected_data = {
+          categoryId: categoryId,
+          ids: [{ id: businessId }]
+        }
+        fav_item.push(selected_data);
+        console.log('fav item added on first time', fav_item);
+        favoriteBusinessCtx.addFavorite(fav_item);
+        await AsyncStorage.setItem("fav_item", JSON.stringify(fav_item));
+      }
+      
+      return
+      console.log('business fav', businessIsFavorite);
+      console.log('businessId', businessId);
+      console.log('businessIndex', businessIndex);
+      console.log('categoryId', categoryId);
+      const fav_item = [];
+      const selected_data = {
+        categoryId: categoryId,
+        ids: [businessId]
+      }
+      fav_item.push(selected_data);
+      console.log('fav items', fav_item);
+      // await AsyncStorage.setItem("fav_item", JSON.stringify(fav_item));
+    }
+
+    function favoritesToggleOnOffHandler1() {
+      if (businessIsFavorite) {
+          favoriteBusinessCtx.removeFavorite(businessId);
+      } else {
+          favoriteBusinessCtx.addFavorite(businessId);
+      }
     }
 
     function favoritesNavigationHandler() {

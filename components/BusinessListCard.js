@@ -3,14 +3,16 @@ import React from 'react'
 import Colors from '../constants/Colors'
 import { useNavigation } from '@react-navigation/native'
 
-function BusinessListCard({ id, businessTitle, location, hours1, hours2, onPress, imageUrl, index }){
+function BusinessListCard({ categoryId, id, businessTitle, location, hours1, hours2, onPress, imageUrl, index }){
   const navigation = useNavigation();
 
   function selectBusinessHandler() {
+    console.log('category id', categoryId);
     console.log('business id ', id);
     console.log('index is ', index);
     // return;
     navigation.navigate('BusinessDetailScreen', {
+      categoryId: categoryId,
       businessId: id,
       businessIndex: index
     });

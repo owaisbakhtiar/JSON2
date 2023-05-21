@@ -11,7 +11,8 @@ function FavoritesContextProvider({ children }) {
   const [favoriteBusinessIds, setFavoriteBusinessIds] = useState([]);
   
   function addFavorite(id) {
-    setFavoriteBusinessIds((currentFavIds) => [...currentFavIds, id]); 
+    console.log('add favorite called', id.length);
+    setFavoriteBusinessIds(id); 
   }
 
   function removeFavorite(id) {

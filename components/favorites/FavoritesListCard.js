@@ -10,41 +10,100 @@ import { BUSINESS } from '../../data/business-data';
 import { FavoritesContext } from '../../store/context/favorites-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle, userComments, location, hours1, hours2, onPress, imageUrl }){
+function FavoritesListCard({ onPressRemoveBusiness, categoryId, id, subCategoryIds, subCategoryTitle, businessTitle, userComments, location, hours1, hours2, onPress, imageUrl }){
+  // onPressRemoveBusiness
   const navigation = useNavigation();
   const favoriteBusinessCtx = useContext(FavoritesContext);
 
   useEffect(() => {
-    // console.log('test fav business', favoriteBusinessCtx);
     setFavStorage();
   }, [favoriteBusinessCtx]);
 
-  function favoritesEditHandler() {
-    navigation.navigate('FavoritesEditScreen', {
-     businessId: id,
-   });
-  }
-
   function selectBusinessHandler() {
-    console.log('business id ', id);
-    console.log('BUSINESS', BUSINESS[2]);
     const index = BUSINESS.findIndex(element => element.id == id);
-    console.log('found', index);
-    // console.log('index is ', index);
-    //return;
     navigation.navigate('BusinessDetailScreen', {
+      categoryId: categoryId,
       businessId: id,
       businessIndex: index
     });
   }
 
-  const removeFromFav = () => {
-    favoriteBusinessCtx.removeFavorite(id);
+  const removeFromFav = async() => {
+    const fav_items_parsed = favoriteBusinessCtx.ids;
+    // console.log('fav item parsed', fav_items_parsed);
+    // check category if exist in storage
+    if (fav_items_parsed && fav_items_parsed.length > 0) {
+      const category_found = fav_items_parsed.findIndex(element => element.categoryId == categoryId);
+      if (category_found >= 0) {
+        const business_ids = fav_items_parsed[category_found].ids;
+        // console.log('category_found in fav item storage', fav_items_parsed[category_found]);
+        // check if business id exist in this category
+        let id_found = -1;
+        for (let i = 0; i < business_ids.length; i++) {
+          // console.log('business id at index', i, ' is ', business_ids[i]);
+          if (business_ids[i].id == id) {
+            id_found = i;
+          }
+        }
+        // console.log('business_found in fav item storage', id_found);
+        if (id_found >= 0) {
+          // fav_items_parsed[category_found].ids.push(businessId);
+          business_ids.splice(id_found, 1);
+          fav_items_parsed[category_found].ids = business_ids;
+          if (business_ids.length == 0) {
+            // console.log('business length is 0 after id removed so remove category as well');
+            fav_items_parsed.splice(category_found, 1);
+          }
+          // console.log('category matched and business id is matched', business_ids);
+          // console.log(fav_items_parsed);
+        }
+      }
+      console.log('CATEGORY AND ID FOUND');
+      favoriteBusinessCtx.addFavorite(fav_items_parsed);
+      await AsyncStorage.setItem("fav_item", JSON.stringify(fav_items_parsed));
+      onPressRemoveBusiness();
+    }
   }
-  
+
+  const removeFromFav1 = async() => {
+    const fav_items = await AsyncStorage.getItem("fav_item");
+    const fav_items_parsed = JSON.parse(fav_items);
+    console.log('fav item parsed', fav_items_parsed);
+    // check category if exist in storage
+    if (fav_items_parsed && fav_items_parsed.length > 0) {
+      const category_found = fav_items_parsed.findIndex(element => element.categoryId == categoryId);
+      if (category_found >= 0) {
+        const business_ids = fav_items_parsed[category_found].ids;
+        console.log('category_found in fav item storage', fav_items_parsed[category_found]);
+        // check if business id exist in this category
+        let id_found = -1;
+        for (let i = 0; i < business_ids.length; i++) {
+          console.log('business id at index', i, ' is ', business_ids[i]);
+          if (business_ids[i].id == id) {
+            id_found = i;
+          }
+        }
+        console.log('business_found in fav item storage', id_found);
+        if (id_found >= 0) {
+          // fav_items_parsed[category_found].ids.push(businessId);
+          business_ids.splice(id_found, 1);
+          fav_items_parsed[category_found].ids = business_ids;
+          if (business_ids.length == 0) {
+            console.log('business length is 0 after id removed so remove category as well');
+            fav_items_parsed.splice(category_found, 1);
+          }
+          console.log('category matched and business id is matched', business_ids);
+          console.log(fav_items_parsed);
+        }
+      }
+      await AsyncStorage.setItem("fav_item", JSON.stringify(fav_items_parsed));
+      // onPressRemoveBusiness();
+    }
+  }
+
   const setFavStorage = async() => {
-    console.log('fav context', favoriteBusinessCtx);
-    await AsyncStorage.setItem("favoriteBusiness", JSON.stringify(favoriteBusinessCtx));
+    console.log('fav context on delete FavoritesListCard', favoriteBusinessCtx);
+    // await AsyncStorage.setItem("fav_item", JSON.stringify(favoriteBusinessCtx.ids));
   }
 
   return (
@@ -55,6 +114,7 @@ function FavoritesListCard({ id, subCategoryIds, subCategoryTitle, businessTitle
         borderColor: Colors.primaryColor, borderWidth: 1, padding: 10
       }}>
           <Text style={styles.title}>{businessTitle} </Text>
+          <Text style={styles.title}>{categoryId} </Text>
           <Text style={styles.text}>{location}</Text>
           <Text style={styles.text}>{hours1}</Text>
           <Text style={styles.text}>{hours2}</Text>

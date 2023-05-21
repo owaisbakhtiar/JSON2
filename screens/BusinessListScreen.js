@@ -27,8 +27,9 @@ function BusinessListScreen({ route, navigation, }) {
   
   function renderBusinessList(itemData) {
     const item = itemData.item
-    console.log('itemData.index', itemData.index);    
+    // console.log('itemData.index', itemData.index);    
     return <BusinessListCard
+      categoryId={catId}
       index={itemData.index}
       id={itemData.item.id}
       businessTitle={itemData.item.businessTitle}

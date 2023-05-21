@@ -17,18 +17,15 @@ function CategoriesScreen({ navigation }) {
     // console.log('test fav business', favoriteBusinessCtx);
     setFavStorage();
   }, []);
-
+  useEffect(() => {
+    // console.log('test fav business', favoriteBusinessCtx);
+  }, [favoriteBusinessCtx]);
   const setFavStorage = async() => {
-    const favBusiness = await AsyncStorage.getItem("favoriteBusiness");
-    console.log('favBusiness', favBusiness);
+    const favBusiness = await AsyncStorage.getItem("fav_item");
     let getFavStorageData = JSON.parse(favBusiness);
-    console.log('favBusiness', favBusiness);
-    console.log('getFavStorageData', getFavStorageData);
     if (getFavStorageData) {
-      getFavStorageData.ids.forEach((item) => {
-        console.log('item', item);
-        favoriteBusinessCtx.addFavorite(item);
-      });
+      // console.log('getFavStorageData on categories page', getFavStorageData);
+      favoriteBusinessCtx.addFavorite(getFavStorageData);
     }
   }
   function renderCategoriesCard(itemData) {
