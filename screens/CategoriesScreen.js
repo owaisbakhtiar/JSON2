@@ -30,7 +30,7 @@ function CategoriesScreen({ navigation }) {
   }
   function renderCategoriesCard(itemData) {
     function pressHandler() {
-      console.log(itemData);
+      // console.log(itemData);
       // return
       // in case you want to pass the entire item, simply pass itemdata as a prop and get it in route.params on detail screen as we get other props
       navigation.navigate('SubCategoriesScreen', { //  you can pass entire obj or each item separately in navigation as props

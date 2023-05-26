@@ -11,7 +11,6 @@ import { FlatList } from 'react-native-gesture-handler'
 
 
 const FavoritesScreen = ({navigation}) => {
-  const [favItems, setFavItems] = useState([]);
   const favoriteBusinessCtx = useContext(FavoritesContext);
   const favoriteBusiness = favoriteBusinessCtx.ids;
   // const favoriteBusiness = BUSINESS.filter(business =>
@@ -22,85 +21,14 @@ const FavoritesScreen = ({navigation}) => {
       // console.log('fav business context', favoriteBusinessCtx.ids[0]);
       // setCommentsListOnPage();
       // console.log('favourites focused and fav storage data is');
-      get_fav_data();
+      // get_fav_data();
     });
   });
-  // useEffect(() => {
-  //   console.log('load fav list on favorite business context load or change');
-  //   get_fav_data();
-  // }, [favoriteBusinessCtx]);
-  
-  const get_fav_data = async() => {
-    const fav_items_parsed = favoriteBusinessCtx.ids;
-    let fav_list_items = [];
-    if (fav_items_parsed && fav_items_parsed.length) {
-      for (let i = 0; i < SUBCATEGORIES.length; i++) {
-        for (let j = 0; j < fav_items_parsed.length; j++) {
-          if (fav_items_parsed[j].categoryId == SUBCATEGORIES[i].id) {
-            const ids_list = fav_items_parsed[j].ids;
-            // console.log('fav_items_parsed[j].ids', SUBCATEGORIES[i].subCategoryTitle)
-            // const favoriteBusiness = BUSINESS.filter(business => 
-            //   ids_list.includes(business.id)
-            // );
-            const favoriteBusiness = BUSINESS.filter((elem) => {
-              return ids_list.some((ele) => {
-              return ele.id === elem.id;
-                });
-            });
-            const selected_data = {
-              categoryId: fav_items_parsed[j].categoryId,
-              categoryName: SUBCATEGORIES[i].subCategoryTitle,
-              ids: favoriteBusiness
-            }
-            // console.log(favoriteBusiness.length);
-            if (favoriteBusiness.length) {
-              fav_list_items.push(selected_data);
-            }
-            // console.log('fav businesses', favoriteBusiness);
-            // console.log('match found on id', fav_items_parsed[j], SUBCATEGORIES[i].id);
-          }
-        }
-      }
-    }
-    // console.log(fav_list_items.length);
-    setFavItems(fav_list_items);
-  }
-  const get_fav_data1 = async() => {
-    const fav_items = await AsyncStorage.getItem("fav_item");
-    const fav_items_parsed = JSON.parse(fav_items);
-    let fav_list_items = [];
-    if (fav_items_parsed && fav_items_parsed.length) {
-      for (let i = 0; i < SUBCATEGORIES.length; i++) {
-        for (let j = 0; j < fav_items_parsed.length; j++) {
-          if (fav_items_parsed[j].categoryId == SUBCATEGORIES[i].id) {
-            const ids_list = fav_items_parsed[j].ids;
-            // console.log('fav_items_parsed[j].ids', SUBCATEGORIES[i].subCategoryTitle)
-            // const favoriteBusiness = BUSINESS.filter(business => 
-            //   ids_list.includes(business.id)
-            // );
-            const favoriteBusiness = BUSINESS.filter((elem) => {
-              return ids_list.some((ele) => {
-              return ele.id === elem.id;
-                });
-            });
-            const selected_data = {
-              categoryId: fav_items_parsed[j].categoryId,
-              categoryName: SUBCATEGORIES[i].subCategoryTitle,
-              ids: favoriteBusiness
-            }
-            // console.log(favoriteBusiness.length);
-            if (favoriteBusiness.length) {
-              fav_list_items.push(selected_data);
-            }
-            // console.log('fav businesses', favoriteBusiness);
-            // console.log('match found on id', fav_items_parsed[j], SUBCATEGORIES[i].id);
-          }
-        }
-      }
-    }
-    // console.log(fav_list_items.length);
-    setFavItems(fav_list_items);
-  }
+  useEffect(() => {
+    console.log('load fav list on favorite business context load or change');
+    // get_fav_data();
+  }, [favoriteBusinessCtx]);
+
   const renderBusinessList = ({ item, index }) => {
     // console.log(item);
     // onPressRemoveBusiness={removeBusiness}
@@ -108,18 +36,13 @@ const FavoritesScreen = ({navigation}) => {
       <View>
         <Text style={styles.categoryTitle}>{item.categoryName}</Text>
         <Text style={styles.savedFavoritesTitle}>Saved favorites</Text>
-        <FavoritesList onPressRemoveBusiness={removeBusiness} categoryId={item.categoryId} items={item.ids} />
+        <FavoritesList categoryId={item.categoryId} items={item.ids} />
         <View style={styles.thickBorder} />
       </View>
     );
   };
-  
-  const removeBusiness = () => {
-    get_fav_data();
-    // alert('test remove');
-  }
 
-  if (favItems.length === 0) {
+  if (favoriteBusiness.length === 0) {
     return (
       <View style={{backgroundColor: 'white'}}>
         <MapChickBanner />
@@ -149,7 +72,7 @@ const FavoritesScreen = ({navigation}) => {
     <View style={{ flex: 1 }}>
       <MapChickBanner />
       <FlatList
-        data={favItems}
+        data={favoriteBusiness}
         keyExtractor={(item) => item.categoryId}
         renderItem={renderBusinessList}
       />

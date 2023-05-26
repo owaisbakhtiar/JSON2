@@ -7,9 +7,9 @@ function BusinessListCard({ categoryId, id, businessTitle, location, hours1, hou
   const navigation = useNavigation();
 
   function selectBusinessHandler() {
-    console.log('category id', categoryId);
-    console.log('business id ', id);
-    console.log('index is ', index);
+    // console.log('category id', categoryId);
+    // console.log('business id ', id);
+    // console.log('index is ', index);
     // return;
     navigation.navigate('BusinessDetailScreen', {
       categoryId: categoryId,

@@ -19,6 +19,7 @@ function FavoritesContextProvider({ children }) {
     setFavoriteBusinessIds((currentFavIds) =>
       currentFavIds.filter((businessId) => businessId !== id)
     );
+    console.log('test remove ');
   }
 
   const value = {

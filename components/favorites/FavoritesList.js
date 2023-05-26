@@ -4,13 +4,13 @@ import MapChickBanner from '../MapChickBanner';
 import FavoritesListCard from './FavoritesListCard';
 
 
-const FavoritesList = ({ onPressRemoveBusiness, categoryId, items}) => {
+const FavoritesList = ({ categoryId, items}) => {
     // onPressRemoveBusiness
     function renderBusinessList(itemData) {
     const item = itemData.item
     // console.log('item', categoryId);
     const BusinessListProps = {
-      onPressRemoveBusiness,
+      // onPressRemoveBusiness,
       categoryId: categoryId,
       id: item.id,
       businessTitle: item.businessTitle,
